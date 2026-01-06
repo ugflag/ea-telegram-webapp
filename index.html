@@ -5,7 +5,21 @@
 <title>EA Control Panel</title>
 
 <!-- Telegram WebApp API -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+
+  function sendAction(action, value = "") {
+    const payload = {
+      action: action,
+      value: value,
+      time: Date.now()
+    };
+
+    tg.sendData(JSON.stringify(payload));
+  }
+</script>
+
 
 <style>
 body {
@@ -47,6 +61,17 @@ button:active {
 
 <body>
 
+<button onclick="sendAction('BUY')">Buy</button>
+<button onclick="sendAction('SELL')">Sell</button>
+<button onclick="sendAction('CLOSE')">Close</button>
+
+<select onchange="sendAction('SELECT_SYMBOL', this.value)">
+  <option value="">Select Symbol</option>
+  <option value="EURUSD">EURUSD</option>
+  <option value="XAUUSD">XAUUSD</option>
+</select>
+
+  
 <h2>EA Control Panel</h2>
 
 <label>Select Action</label>

@@ -1,10 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Test OK</title>
+<meta charset="UTF-8">
+<title>EA Control Panel</title>
+
+<!-- Telegram WebApp API -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+select, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+
+select {
+  background: #1e293b;
+  color: white;
+}
+
+button {
+  background: #22c55e;
+  color: black;
+  cursor: pointer;
+}
+
+button:active {
+  background: #16a34a;
+}
+</style>
 </head>
+
 <body>
-  <h1>Server Working</h1>
-  <p>If you see this, hosting works.</p>
+
+<h2>EA Control Panel</h2>
+
+<label>Select Action</label>
+<select id="action">
+  <option value="buy">BUY</option>
+  <option value="sell">SELL</option>
+  <option value="close">CLOSE ALL</option>
+  <option value="info">ACCOUNT INFO</option>
+</select>
+
+<button onclick="sendAction()">Send</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+function sendAction() {
+  const action = document.getElementById("action").value;
+
+  tg.sendData(JSON.stringify({
+    action: action
+  }));
+
+  tg.close();
+}
+</script>
+
 </body>
 </html>

@@ -1,196 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>EA Control Panel</title>
+  <meta charset="UTF-8">
+  <title>EA Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Telegram WebApp API -->
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand();<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>EA Control Panel</title>
+  <!-- Telegram WebApp API (REQUIRED) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Telegram WebApp API -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+    }
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  padding: 20px;
-}
+    h2 {
+      text-align: center;
+    }
 
-h2 {
-  text-align: center;
-}
+    select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
 
-select, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 16px;
-}
+    select {
+      background: #1e293b;
+      color: white;
+    }
 
-select {
-  background: #1e293b;
-  color: white;
-}
+    button {
+      background: #22c55e;
+      color: black;
+      cursor: pointer;
+    }
 
-button {
-  background: #22c55e;
-  color: black;
-  cursor: pointer;
-}
-
-button:active {
-  background: #16a34a;
-}
-</style>
+    button:active {
+      background: #16a34a;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>EA Control Panel</h2>
+  <h2>EA Control Panel</h2>
 
-<label>Select Action</label>
-<select id="action">
-  <option value="buy">BUY</option>
-  <option value="sell">SELL</option>
-  <option value="close">CLOSE ALL</option>
-  <option value="info">ACCOUNT INFO</option>
-</select>
+  <!-- ACTION DROPDOWN -->
+  <label>Select Action</label>
+  <select id="action">
+    <option value="BUY">BUY</option>
+    <option value="SELL">SELL</option>
+    <option value="CLOSE">CLOSE ALL</option>
+    <option value="INFO">ACCOUNT INFO</option>
+  </select>
 
-<button onclick="sendAction()">Send</button>
+  <!-- SYMBOL DROPDOWN -->
+  <label>Select Symbol</label>
+  <select id="symbol">
+    <option value="">Current Chart</option>
+    <option value="EURUSD">EURUSD</option>
+    <option value="XAUUSD">XAUUSD</option>
+  </select>
 
-<script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+  <!-- SEND BUTTON -->
+  <button onclick="sendAction()">Send</button>
 
-function sendAction() {
-  const action = document.getElementById("action").value;
+  <!-- TELEGRAM SCRIPT -->
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-  tg.sendData(JSON.stringify({
-    action: action
-  }));
+    function sendAction() {
+      const action = document.getElementById("action").value;
+      const symbol = document.getElementById("symbol").value;
 
-  tg.close();
-}
-</script>
+      const payload = {
+        action: action,
+        symbol: symbol,
+        time: Date.now()
+      };
 
-</body>
-</html>
-
-
-  function sendAction(action, value = "") {
-    const payload = {
-      action: action,
-      value: value,
-      time: Date.now()
-    };
-
-    tg.sendData(JSON.stringify(payload));
-  }
-</script>
-
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  padding: 20px;
-}
-
-h2 {
-  text-align: center;
-}
-
-select, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 16px;
-}
-
-select {
-  background: #1e293b;
-  color: white;
-}
-
-button {
-  background: #22c55e;
-  color: black;
-  cursor: pointer;
-}
-
-button:active {
-  background: #16a34a;
-}
-</style>
-</head>
-
-<body>
-
-<button onclick="sendAction('BUY')">Buy</button>
-<button onclick="sendAction('SELL')">Sell</button>
-<button onclick="sendAction('CLOSE')">Close</button>
-
-<select onchange="sendAction('SELECT_SYMBOL', this.value)">
-  <option value="">Select Symbol</option>
-  <option value="EURUSD">EURUSD</option>
-  <option value="XAUUSD">XAUUSD</option>
-</select>
-  
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand();
-
-  function sendAction(action, value = "") {
-    const payload = {
-      action: action,
-      value: value,
-      time: Date.now()
-    };
-
-    tg.sendData(JSON.stringify(payload));
-  }
-</script>
-
-  
-<h2>EA Control Panel</h2>
-
-<label>Select Action</label>
-<select id="action">
-  <option value="buy">BUY</option>
-  <option value="sell">SELL</option>
-  <option value="close">CLOSE ALL</option>
-  <option value="info">ACCOUNT INFO</option>
-</select>
-
-<button onclick="sendAction()">Send</button>
-
-<script>
-const tg = window.Telegram.WebApp;
-tg.expand();
-
-function sendAction() {
-  const action = document.getElementById("action").value;
-
-  tg.sendData(JSON.stringify({
-    action: action
-  }));
-
-  tg.close();
-}
-</script>
+      tg.sendData(JSON.stringify(payload));
+    }
+  </script>
 
 </body>
 </html>

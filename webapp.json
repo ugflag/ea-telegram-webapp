@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "description": "Telegram Trading WebApp",
+  "features": {
+    "instrumentSelection": true,
+    "tradeActions": ["BUY", "SELL", "CLOSE"],
+    "defaultSLTP": "30 pips"
+  }
+}

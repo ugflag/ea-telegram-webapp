@@ -1,61 +1,77 @@
 const tg = window.Telegram.WebApp;
-tg.ready();
+tg.expand();
 
-let selectedInstrument = "";
-let selectedType = "";
+let currentSymbol = "";
+let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
 const forexList = [
-  "EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAGUSD"
+  "Favored",
+  "EURUSD",
+  "GBPUSD",
+  "USDJPY",
+  "XAUUSD",
+  "XAGUSD"
 ];
 
 const syntheticList = [
-  "Boom 1000 Index",
-  "Crash 1000 Index",
-  "Jump 100 Index",
-  "Volatility 75 Index"
+  "Favored",
+  "Volatility 75 Index",
+  "Volatility 100 Index",
+  "Jump 50 Index",
+  "Boom 1000 Index"
 ];
 
-const instrumentRow = document.getElementById("instrumentRow");
-
-document.getElementById("btnForex").onclick = () => loadInstruments("FOREX");
-document.getElementById("btnSynthetic").onclick = () => loadInstruments("SYNTHETIC");
-
-function loadInstruments(type) {
-  selectedType = type;
-  instrumentRow.innerHTML = "";
-
-  const list = type === "FOREX" ? forexList : syntheticList;
+function populateSelect(id, list) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = "";
 
   list.forEach(sym => {
-    const btn = document.createElement("button");
-    btn.textContent = sym;
-    btn.onclick = () => selectInstrument(btn, sym);
-    instrumentRow.appendChild(btn);
+    if (sym === "Favored") {
+      sel.add(new Option("⭐ Favored", "FAV"));
+      return;
+    }
+
+    if (sel.value === "FAV" && !favorites.includes(sym)) return;
+
+    let label = sym + (favorites.includes(sym) ? " ⭐" : "");
+    sel.add(new Option(label, sym));
   });
 }
 
-function selectInstrument(btn, symbol) {
-  selectedInstrument = symbol;
-
-  document.querySelectorAll("#instrumentRow button")
-    .forEach(b => b.classList.remove("active"));
-
-  btn.classList.add("active");
+function refreshAll() {
+  populateSelect("forexSelect", forexList);
+  populateSelect("syntheticSelect", syntheticList);
 }
 
+document.getElementById("forexSelect").addEventListener("change", e => {
+  if (e.target.value === "FAV") {
+    populateSelect("forexSelect", forexList);
+    return;
+  }
+  currentSymbol = e.target.value;
+  document.getElementById("syntheticSelect").value = "";
+});
+
+document.getElementById("syntheticSelect").addEventListener("change", e => {
+  if (e.target.value === "FAV") {
+    populateSelect("syntheticSelect", syntheticList);
+    return;
+  }
+  currentSymbol = e.target.value;
+  document.getElementById("forexSelect").value = "";
+});
+
 function sendAction(action) {
-  if (!selectedInstrument && action !== "CONTACT" && action !== "JOIN") {
-    tg.showAlert("Select an instrument first");
+  if (!currentSymbol && ["BUY", "SELL", "CLOSE"].includes(action)) {
+    alert("Select an instrument first");
     return;
   }
 
-  const payload = {
-    action: action,
-    instrument: selectedInstrument,
-    type: selectedType,
-    time: Math.floor(Date.now() / 1000)
-  };
-
-  console.log("Sending:", payload);
-  tg.sendData(JSON.stringify(payload));
+  tg.sendData(JSON.stringify({
+    action,
+    symbol: currentSymbol,
+    time: Date.now()
+  }));
 }
+
+refreshAll();

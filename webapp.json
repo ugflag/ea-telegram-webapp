@@ -1,9 +1,8 @@
 {
-  "version": "1.0",
-  "description": "Telegram Trading WebApp",
-  "features": {
-    "instrumentSelection": true,
-    "tradeActions": ["BUY", "SELL", "CLOSE"],
-    "defaultSLTP": "30 pips"
-  }
+  "name": "EA Control Panel",
+  "short_name": "EA Panel",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#22c55e"
 }

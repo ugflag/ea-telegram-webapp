@@ -1,77 +1,110 @@
-const tg = window.Telegram.WebApp;
-tg.expand();
-
-let currentSymbol = "";
-let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-
-const forexList = [
-  "Favored",
+const forexPairs = [
   "EURUSD",
   "GBPUSD",
-  "USDJPY",
-  "XAUUSD",
-  "XAGUSD"
+  "XAUUSD"
 ];
 
-const syntheticList = [
-  "Favored",
-  "Volatility 75 Index",
-  "Volatility 100 Index",
-  "Jump 50 Index",
-  "Boom 1000 Index"
+const syntheticPairs = [
+  "JUMP 50",
+  "STEP Index",
+  "Volatility 75"
 ];
 
-function populateSelect(id, list) {
-  const sel = document.getElementById(id);
-  sel.innerHTML = "";
+let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let currentCategory = "";
+let currentSymbol = "";
+
+// INIT MENUS
+function initMenus() {
+  buildMenu("forexMenu", forexPairs);
+  buildMenu("syntheticMenu", syntheticPairs);
+  renderFavBar();
+}
+
+function buildMenu(menuId, list) {
+  const menu = document.getElementById(menuId);
+  menu.innerHTML = `<option value="">Favored ⭐</option>`;
 
   list.forEach(sym => {
-    if (sym === "Favored") {
-      sel.add(new Option("⭐ Favored", "FAV"));
-      return;
-    }
-
-    if (sel.value === "FAV" && !favorites.includes(sym)) return;
-
-    let label = sym + (favorites.includes(sym) ? " ⭐" : "");
-    sel.add(new Option(label, sym));
+    const star = favorites.includes(sym) ? "⭐" : "☆";
+    menu.innerHTML += `<option value="${sym}">${star} ${sym}</option>`;
   });
 }
 
-function refreshAll() {
-  populateSelect("forexSelect", forexList);
-  populateSelect("syntheticSelect", syntheticList);
-}
+function handleMenu(category) {
+  currentCategory = category;
 
-document.getElementById("forexSelect").addEventListener("change", e => {
-  if (e.target.value === "FAV") {
-    populateSelect("forexSelect", forexList);
-    return;
-  }
-  currentSymbol = e.target.value;
-  document.getElementById("syntheticSelect").value = "";
-});
+  const menu = document.getElementById(
+    category === "forex" ? "forexMenu" : "syntheticMenu"
+  );
 
-document.getElementById("syntheticSelect").addEventListener("change", e => {
-  if (e.target.value === "FAV") {
-    populateSelect("syntheticSelect", syntheticList);
-    return; 
-  }
-  currentSymbol = e.target.value;
-  document.getElementById("forexSelect").value = "";
-});
+  const val = menu.value;
 
-function sendAction(action) {
-  if (!currentSymbol && ["BUY", "SELL", "CLOSE"].includes(action)) {
-    alert("Select an instrument first");
+  if (val === "") {
+    renderFavBar();
     return;
   }
 
-  tg.sendData(JSON.stringify({
-    action,
-    symbol: currentSymbol,
-    time: Date.now()
-  }));
+  currentSymbol = val;
+  toggleFavorite(val);
 }
 
-refreshAll();
+function toggleFavorite(sym) {
+  if (favorites.includes(sym)) {
+    favorites = favorites.filter(s => s !== sym);
+  } else {
+    favorites.push(sym);
+  }
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  initMenus();
+}
+
+function renderFavBar() {
+  const bar = document.getElementById("favBar");
+  bar.innerHTML = "";
+
+  let list =
+    currentCategory === "synthetic"
+      ? syntheticPairs
+      : forexPairs;
+
+  const favs = favorites.filter(f => list.includes(f));
+
+  if (favs.length === 0) {
+    bar.innerHTML =
+      `<div class="instrument empty">Select instrument from menu above</div>`;
+    return;
+  }
+
+  favs.forEach(sym => {
+    const div = document.createElement("div");
+    div.className = "instrument" + (sym === currentSymbol ? " active" : "");
+    div.textContent = sym;
+    div.onclick = () => {
+      currentSymbol = sym;
+      renderFavBar();
+    };
+    bar.appendChild(div);
+  });
+}
+
+function sendTrade(action) {
+  if (!currentSymbol) {
+    alert("No instrument selected");
+    return;
+  }
+
+  const payload = {
+    action: action,
+    symbol: currentSymbol
+  };
+
+  if (window.Telegram?.WebApp) {
+    Telegram.WebApp.sendData(JSON.stringify(payload));
+  } else {
+    console.log(payload);
+  }
+}
+
+initMenus();

@@ -1,107 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Trading Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>EA Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #0f172a;
-      color: #e5e7eb;
-      margin: 0;
-      padding: 10px;
+      color: white;
+      padding: 16px;
     }
 
-    h3 {
+    h2 {
       text-align: center;
-      margin: 10px 0;
+      margin-bottom: 12px;
     }
 
     .row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+    }
+
+    select {
+      background: #1e293b;
+      color: white;
     }
 
     button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background: #1f2933;
-      color: #fff;
-      font-weight: bold;
+      background: #22c55e;
+      color: black;
       cursor: pointer;
     }
 
-    button.active {
-      background: #2563eb;
-    }
-
-    button.buy { background: #16a34a; }
-    button.sell { background: #dc2626; }
-    button.close { background: #6b7280; }
-
     button.secondary {
-      background: #334155;
+      background: #38bdf8;
     }
 
-    button.footer {
-      background: #020617;
-      font-size: 12px;
+    button.danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    button.active {
+      outline: 2px solid #facc15;
+    }
+
+    .bottom-fixed {
+      margin-top: 30px;
+      border-top: 1px solid #334155;
+      padding-top: 12px;
+    }
+
+    .star {
+      float: right;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
 
-<h3>📊 Trading WebApp</h3>
+<h2>EA Control Panel</h2>
 
-<!-- Instrument Type -->
+<!-- INSTRUMENT SELECTION -->
 <div class="row">
-  <button id="btnForex">Forex / Commodities</button>
-  <button id="btnSynthetic">Synthetics / VIX</button>
+  <label>Forex / Commodities</label>
+  <select id="forexSelect"></select>
 </div>
 
-<!-- Instrument List -->
-<div class="row" id="instrumentRow"></div>
-
-<!-- Info -->
 <div class="row">
-  <button class="secondary" onclick="sendAction('EA_NAME')">EA Name</button>
-  <button class="secondary" onclick="sendAction('ACCOUNT_INFO')">Account Info</button>
-  <button class="secondary" onclick="sendAction('ACTIVE_EA')">Active Charts</button>
+  <label>Synthetics / VIX</label>
+  <select id="syntheticSelect"></select>
 </div>
 
-<!-- Market -->
+<!-- INFO -->
 <div class="row">
-  <button class="secondary" onclick="sendAction('QUOTES')">Market Quotes</button>
-  <button class="secondary" onclick="sendAction('SCREENSHOT')">Screenshot</button>
+  <button onclick="sendAction('EA_NAME')">EA's Name</button>
+  <button onclick="sendAction('ACCOUNT_INFO')">Account Info</button>
+  <button onclick="sendAction('ACTIVE_CHARTS')">Log EA Active Charts</button>
 </div>
 
-<!-- Trading -->
+<!-- MARKET -->
 <div class="row">
-  <button class="buy" onclick="sendAction('BUY')">BUY</button>
-  <button class="sell" onclick="sendAction('SELL')">SELL</button>
-  <button class="close" onclick="sendAction('CLOSE')">CLOSE</button>
-  <button class="secondary" onclick="sendAction('ADJUST')">Adjust SL/TP</button>
+  <button onclick="sendAction('QUOTES')" class="secondary">Current Market Quotes</button>
+  <button onclick="sendAction('SCREENSHOT')" class="secondary">Screenshot</button>
 </div>
 
-<!-- Status -->
+<!-- TRADING -->
 <div class="row">
-  <button class="secondary" onclick="sendAction('STATUS')">Status</button>
-  <button class="secondary" onclick="sendAction('RESULTS')">Results</button>
+  <button onclick="sendAction('BUY')">Buy</button>
+  <button onclick="sendAction('SELL')">Sell</button>
+  <button onclick="sendAction('CLOSE')" class="danger">Close</button>
+  <button onclick="sendAction('ADJUST')">Adjust SL / TP</button>
 </div>
 
-<!-- Footer -->
+<!-- STATUS -->
 <div class="row">
-  <button class="footer" onclick="sendAction('CONTACT')">Contact Us</button>
-  <button class="footer" onclick="sendAction('JOIN')">Join Us</button>
+  <button onclick="sendAction('STATUS')">Status</button>
+  <button onclick="sendAction('RESULTS')">Results</button>
+</div>
+
+<!-- BOTTOM -->
+<div class="bottom-fixed">
+  <button onclick="sendAction('CONTACT')">Contact Us</button>
+  <button onclick="sendAction('JOIN')">Join Us</button>
 </div>
 
 <script src="app.js"></script>

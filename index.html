@@ -1,135 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>EA Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
-  <style>
-    body {
-      margin: 0;
-      font-family: Inter, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-    }
+<meta charset="UTF-8" />
+<title>EA Control Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    .container {
-      padding: 12px;
-    }
+<!-- Telegram WebApp API -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    h2 {
-      text-align: center;
-      margin: 6px 0 12px;
-    }
+<style>
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-family: Inter, Arial, sans-serif;
+  height: 100vh;
+}
 
-    .row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
 
-    .btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
+.content {
+  flex: 1;
+}
 
-    .secondary { background: #1e293b; color: #fff; }
-    .green { background: #22c55e; color: #000; }
-    .blue { background: #38bdf8; color: #000; }
-    .danger { background: #ef4444; color: #fff; }
+/* ===== LAYOUT ===== */
+.row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
-    select {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      background: #1e293b;
-      color: #fff;
-      border: none;
-    }
+.row.center {
+  justify-content: center;
+}
 
-    .fav-bar {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
+.row.full button {
+  flex: 1;
+}
 
-    .instrument {
-      background: #1e293b;
-      padding: 8px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+select, button {
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+}
 
-    .instrument.active {
-      outline: 2px solid #22c55e;
-    }
+button.primary {
+  background: #22c55e;
+  color: #022c22;
+}
 
-    .empty {
-      opacity: 0.7;
-      font-style: italic;
-    }
+button.secondary {
+  background: #38bdf8;
+  color: #022c22;
+}
 
-    .footer {
-      margin-top: 12px;
-    }
-  </style>
+button.danger {
+  background: #ef4444;
+}
+
+button.active {
+  outline: 2px solid #facc15;
+}
+
+/* ===== FAVORITES LIST ===== */
+.favorites {
+  border: 1px dashed #334155;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.fav-item {
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.fav-item:hover {
+  background: #1e293b;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  margin-top: auto;
+}
+</style>
 </head>
+
 <body>
-
 <div class="container">
-  <h2>EA Control Panel</h2>
 
-  <!-- CATEGORY DROPDOWNS -->
-  <div class="row">
-    <select id="forexMenu" onchange="handleMenu('forex')">
-      <option value="">Forex / Commodities</option>
-    </select>
+  <div class="content">
 
-    <select id="syntheticMenu" onchange="handleMenu('synthetic')">
-      <option value="">Synthetics / VIX</option>
-    </select>
+    <h3 style="text-align:center;margin:8px 0;">EA Control Panel</h3>
+
+    <!-- INSTRUMENT SELECTORS -->
+    <div class="row">
+      <select id="forexMenu">
+        <option value="">Forex / Commodities</option>
+        <option value="FAV">⭐ Favored</option>
+        <option value="EURUSD">EURUSD</option>
+        <option value="GBPUSD" data-fav="1">GBPUSD ⭐</option>
+        <option value="XAUUSD">XAUUSD</option>
+      </select>
+
+      <select id="vixMenu">
+        <option value="">Synthetics / VIX</option>
+        <option value="FAV">⭐ Favored</option>
+        <option value="JUMP50">JUMP 50</option>
+        <option value="STEP" data-fav="1">STEP Index ⭐</option>
+        <option value="V75" data-fav="1">Volatility 75 ⭐</option>
+      </select>
+    </div>
+
+    <!-- FAVORITES DISPLAY -->
+    <div class="favorites" id="favList">
+      <div>Select instrument from menu above</div>
+    </div>
+
+    <!-- INFO ROW -->
+    <div class="row full">
+      <button class="primary">EA Name</button>
+      <button class="primary">Account Info</button>
+      <button class="primary">Active Charts</button>
+    </div>
+
+    <!-- MARKET ROW -->
+    <div class="row full">
+      <button class="secondary">Quotes</button>
+      <button class="secondary">Screenshot</button>
+    </div>
+
+    <!-- TRADE ROW -->
+    <div class="row full">
+      <button class="primary" onclick="sendAction('BUY')">Buy</button>
+      <button class="primary" onclick="sendAction('SELL')">Sell</button>
+      <button class="danger" onclick="sendAction('CLOSE')">Close</button>
+      <button class="secondary">Adjust</button>
+    </div>
+
+    <!-- STATUS ROW -->
+    <div class="row full">
+      <button>Status</button>
+      <button>Results</button>
+    </div>
+
   </div>
 
-  <!-- FAVORITES BAR -->
-  <div id="favBar" class="fav-bar"></div>
-
-  <hr>
-
-  <!-- ACTION ROWS -->
-  <div class="row">
-    <button class="btn green">EA Name</button>
-    <button class="btn green">Account Info</button>
-    <button class="btn green">Active Charts</button>
+  <!-- FOOTER (LOCKED TO BOTTOM) -->
+  <div class="row footer full">
+    <button>Contact Us</button>
+    <button>Join Us</button>
   </div>
 
-  <div class="row">
-    <button class="btn blue">Quotes</button>
-    <button class="btn blue">Screenshot</button>
-  </div>
-
-  <div class="row">
-    <button class="btn green" onclick="sendTrade('BUY')">Buy</button>
-    <button class="btn green" onclick="sendTrade('SELL')">Sell</button>
-    <button class="btn danger" onclick="sendTrade('CLOSE')">Close</button>
-    <button class="btn secondary">Adjust</button>
-  </div>
-
-  <div class="row">
-    <button class="btn secondary">Status</button>
-    <button class="btn secondary">Results</button>
-  </div>
-
-  <div class="row footer">
-    <button class="btn secondary">Contact Us</button>
-    <button class="btn secondary">Join Us</button>
-  </div>
 </div>
 
-<script src="app.js"></script>
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+let selectedInstrument = "";
+
+function updateFavorites(type) {
+  const list = document.getElementById("favList");
+  list.innerHTML = "";
+
+  let menu = type === "forex"
+    ? document.getElementById("forexMenu")
+    : document.getElementById("vixMenu");
+
+  let favs = [];
+  for (let opt of menu.options) {
+    if (opt.dataset.fav === "1") favs.push(opt.value);
+  }
+
+  if (favs.length === 0) {
+    list.innerHTML = "<div>Select instrument from menu above</div>";
+    return;
+  }
+
+  favs.forEach(sym => {
+    let div = document.createElement("div");
+    div.className = "fav-item";
+    div.textContent = sym;
+    div.onclick = () => {
+      selectedInstrument = sym;
+      document.querySelectorAll(".fav-item").forEach(e => e.classList.remove("active"));
+      div.classList.add("active");
+    };
+    list.appendChild(div);
+  });
+}
+
+document.getElementById("forexMenu").onchange = function () {
+  if (this.value === "FAV") updateFavorites("forex");
+  else if (this.value) selectedInstrument = this.value;
+};
+
+document.getElementById("vixMenu").onchange = function () {
+  if (this.value === "FAV") updateFavorites("vix");
+  else if (this.value) selectedInstrument = this.value;
+};
+
+function sendAction(action) {
+  tg.sendData(JSON.stringify({
+    action,
+    symbol: selectedInstrument,
+    time: Date.now()
+  }));
+}
+</script>
+
 </body>
 </html>

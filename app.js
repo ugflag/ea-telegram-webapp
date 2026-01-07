@@ -55,7 +55,7 @@ document.getElementById("forexSelect").addEventListener("change", e => {
 document.getElementById("syntheticSelect").addEventListener("change", e => {
   if (e.target.value === "FAV") {
     populateSelect("syntheticSelect", syntheticList);
-    return;
+    return; 
   }
   currentSymbol = e.target.value;
   document.getElementById("forexSelect").value = "";

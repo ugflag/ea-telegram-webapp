@@ -3,119 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <title>EA Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: Inter, sans-serif;
       background: #0f172a;
-      color: white;
-      padding: 16px;
+      color: #e5e7eb;
+    }
+
+    .container {
+      padding: 12px;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 12px;
+      margin: 6px 0 12px;
     }
 
     .row {
-      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
-    select, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border-radius: 6px;
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
-      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
     }
+
+    .secondary { background: #1e293b; color: #fff; }
+    .green { background: #22c55e; color: #000; }
+    .blue { background: #38bdf8; color: #000; }
+    .danger { background: #ef4444; color: #fff; }
 
     select {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
       background: #1e293b;
-      color: white;
+      color: #fff;
+      border: none;
     }
 
-    button {
-      background: #22c55e;
-      color: black;
+    .fav-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .instrument {
+      background: #1e293b;
+      padding: 8px 10px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
-    button.secondary {
-      background: #38bdf8;
+    .instrument.active {
+      outline: 2px solid #22c55e;
     }
 
-    button.danger {
-      background: #ef4444;
-      color: white;
+    .empty {
+      opacity: 0.7;
+      font-style: italic;
     }
 
-    button.active {
-      outline: 2px solid #facc15;
-    }
-
-    .bottom-fixed {
-      margin-top: 30px;
-      border-top: 1px solid #334155;
-      padding-top: 12px;
-    }
-
-    .star {
-      float: right;
-      cursor: pointer;
+    .footer {
+      margin-top: 12px;
     }
   </style>
 </head>
-
 <body>
 
-<h2>EA Control Panel</h2>
+<div class="container">
+  <h2>EA Control Panel</h2>
 
-<!-- INSTRUMENT SELECTION -->
-<div class="row">
-  <label>Forex / Commodities</label>
-  <select id="forexSelect"></select>
-</div>
+  <!-- CATEGORY DROPDOWNS -->
+  <div class="row">
+    <select id="forexMenu" onchange="handleMenu('forex')">
+      <option value="">Forex / Commodities</option>
+    </select>
 
-<div class="row">
-  <label>Synthetics / VIX</label>
-  <select id="syntheticSelect"></select>
-</div>
+    <select id="syntheticMenu" onchange="handleMenu('synthetic')">
+      <option value="">Synthetics / VIX</option>
+    </select>
+  </div>
 
-<!-- INFO -->
-<div class="row">
-  <button onclick="sendAction('EA_NAME')">EA's Name</button>
-  <button onclick="sendAction('ACCOUNT_INFO')">Account Info</button>
-  <button onclick="sendAction('ACTIVE_CHARTS')">Log EA Active Charts</button>
-</div>
+  <!-- FAVORITES BAR -->
+  <div id="favBar" class="fav-bar"></div>
 
-<!-- MARKET -->
-<div class="row">
-  <button onclick="sendAction('QUOTES')" class="secondary">Current Market Quotes</button>
-  <button onclick="sendAction('SCREENSHOT')" class="secondary">Screenshot</button>
-</div>
+  <hr>
 
-<!-- TRADING -->
-<div class="row">
-  <button onclick="sendAction('BUY')">Buy</button>
-  <button onclick="sendAction('SELL')">Sell</button>
-  <button onclick="sendAction('CLOSE')" class="danger">Close</button>
-  <button onclick="sendAction('ADJUST')">Adjust SL / TP</button>
-</div> 
+  <!-- ACTION ROWS -->
+  <div class="row">
+    <button class="btn green">EA Name</button>
+    <button class="btn green">Account Info</button>
+    <button class="btn green">Active Charts</button>
+  </div>
 
-<!-- STATUS -->
-<div class="row">
-  <button onclick="sendAction('STATUS')">Status</button>
-  <button onclick="sendAction('RESULTS')">Results</button>
-</div>
+  <div class="row">
+    <button class="btn blue">Quotes</button>
+    <button class="btn blue">Screenshot</button>
+  </div>
 
-<!-- BOTTOM -->
-<div class="bottom-fixed">
-  <button onclick="sendAction('CONTACT')">Contact Us</button>
-  <button onclick="sendAction('JOIN')">Join Us</button>
+  <div class="row">
+    <button class="btn green" onclick="sendTrade('BUY')">Buy</button>
+    <button class="btn green" onclick="sendTrade('SELL')">Sell</button>
+    <button class="btn danger" onclick="sendTrade('CLOSE')">Close</button>
+    <button class="btn secondary">Adjust</button>
+  </div>
+
+  <div class="row">
+    <button class="btn secondary">Status</button>
+    <button class="btn secondary">Results</button>
+  </div>
+
+  <div class="row footer">
+    <button class="btn secondary">Contact Us</button>
+    <button class="btn secondary">Join Us</button>
+  </div>
 </div>
 
 <script src="app.js"></script>

@@ -1,135 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>EA Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
   <style>
-    body {
-      margin: 0;
-      font-family: Inter, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
+    :root{
+      --bg:#0f172a; --panel:#0b1220; --muted:#94a3b8; --accent:#22c55e; --blue:#38bdf8; --danger:#ef4444;
+      --card:#111827; --secondary:#1e293b; --text:#e5e7eb;
     }
-
-    .container {
-      padding: 12px;
+    * { box-sizing: border-box; }
+    body{
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     }
-
-    h2 {
-      text-align: center;
-      margin: 6px 0 12px;
-    }
-
-    .row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .secondary { background: #1e293b; color: #fff; }
-    .green { background: #22c55e; color: #000; }
-    .blue { background: #38bdf8; color: #000; }
-    .danger { background: #ef4444; color: #fff; }
-
-    select {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      background: #1e293b;
-      color: #fff;
-      border: none;
-    }
-
-    .fav-bar {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .instrument {
-      background: #1e293b;
-      padding: 8px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .instrument.active {
-      outline: 2px solid #22c55e;
-    }
-
-    .empty {
-      opacity: 0.7;
-      font-style: italic;
-    }
-
-    .footer {
-      margin-top: 12px;
+    .wrap{ max-width:420px; margin:0 auto; padding:12px; min-height:100vh; display:flex; flex-direction:column; gap:12px; }
+    h2{ text-align:center; margin:4px 0 8px; font-size:20px; font-weight:700; }
+    .top-row{ display:flex; gap:8px; }
+    .col{ flex:1; }
+    /* custom dropdown */
+    .dropdown { background:var(--secondary); padding:10px; border-radius:8px; cursor:pointer; color:var(--text); border:none; display:flex; justify-content:space-between; align-items:center; }
+    .dropdown .title{ opacity:0.9; }
+    .dropdown .caret{ opacity:0.7; font-size:18px; }
+    .menu { position:relative; }
+    .menu-panel{ position:absolute; left:0; right:0; top:calc(100% + 8px); background:var(--card); border-radius:8px; padding:8px; z-index:40; box-shadow:0 6px 18px rgba(0,0,0,0.6); max-height:320px; overflow:auto; }
+    .menu-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px; border-radius:6px; }
+    .menu-row:hover{ background:rgba(255,255,255,0.02); }
+    .menu-title{ font-weight:600; color:var(--text); }
+    .menu-small{ font-size:13px; color:var(--muted); }
+    .star-btn{ border:none; background:transparent; font-size:18px; cursor:pointer; color:gold; }
+    .fav-toggle{ display:flex; gap:8px; align-items:center; padding:6px 8px; border-radius:6px; margin-bottom:6px; }
+    .fav-toggle input{ transform:scale(1.1); margin-right:6px; }
+    /* favorites bar (second list) */
+    #favBar{ display:flex; gap:8px; flex-wrap:wrap; padding:8px 0; min-height:44px; }
+    .instr-btn{ background:var(--secondary); border-radius:8px; padding:8px 12px; cursor:pointer; border:none; color:var(--text); font-weight:600; }
+    .instr-btn.active{ outline:3px solid rgba(34,197,94,0.18); background:linear-gradient(180deg,#0f172a,#111827); }
+    .empty{ color:var(--muted); font-style:italic; padding:8px; }
+    hr{ border:0; height:1px; background:rgba(255,255,255,0.06); margin:6px 0 10px; }
+    /* actions rows */
+    .row{ display:flex; gap:8px; }
+    .btn{ flex:1; padding:10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+    .green{ background:var(--accent); color:#020617; }
+    .blue{ background:var(--blue); color:#02111a; }
+    .danger{ background:var(--danger); color:#fff; }
+    .secondary{ background:var(--secondary); color:var(--text); }
+    .footer{ margin-top:auto; display:flex; gap:8px; }
+    /* small screens adjustments */
+    @media (max-width:420px){
+      .wrap{ padding:10px; }
+      .btn{ font-size:14px; }
     }
   </style>
 </head>
 <body>
+  <div class="wrap" id="app">
+    <h2>EA Control Panel</h2>
 
-<div class="container">
-  <h2>EA Control Panel</h2>
+    <!-- Category dropdowns (side-by-side) -->
+    <div class="top-row">
+      <div class="col menu" id="forexMenuWrap">
+        <div class="dropdown" id="forexDropdown" onclick="toggleMenu('forex')">
+          <div class="title">Forex / Commodities</div>
+          <div class="caret">▾</div>
+        </div>
+      </div>
 
-  <!-- CATEGORY DROPDOWNS -->
-  <div class="row">
-    <select id="forexMenu" onchange="handleMenu('forex')">
-      <option value="">Forex / Commodities</option>
-    </select>
+      <div class="col menu" id="synthMenuWrap">
+        <div class="dropdown" id="synthDropdown" onclick="toggleMenu('synth')">
+          <div class="title">Synthetics / VIX</div>
+          <div class="caret">▾</div>
+        </div>
+      </div>
+    </div>
 
-    <select id="syntheticMenu" onchange="handleMenu('synthetic')">
-      <option value="">Synthetics / VIX</option>
-    </select>
+    <!-- second list: shows favored instruments for selected category -->
+    <div id="favBar" aria-live="polite"></div>
+
+    <hr>
+
+    <!-- action rows: keep original layout -->
+    <div class="row">
+      <button class="btn green" id="btnEaName">EA Name</button>
+      <button class="btn green" id="btnAccount">Account Info</button>
+      <button class="btn green" id="btnActive">Active Charts</button>
+    </div>
+
+    <div class="row">
+      <button class="btn blue" id="btnQuotes">Current Market Quotes</button>
+      <button class="btn blue" id="btnShot">Screenshot</button>
+    </div>
+
+    <div class="row">
+      <button class="btn green" onclick="doAction('BUY')">Buy</button>
+      <button class="btn green" onclick="doAction('SELL')">Sell</button>
+      <button class="btn danger" onclick="doAction('CLOSE')">Close</button>
+      <button class="btn secondary" id="btnAdjust">Adjust</button>
+    </div>
+
+    <div class="row">
+      <button class="btn secondary" id="btnStatus">Status</button>
+      <button class="btn secondary" id="btnResults">Results</button>
+    </div>
+
+    <!-- footer forced to bottom of container -->
+    <div class="footer">
+      <button class="btn secondary" id="btnContact">Contact Us</button>
+      <button class="btn secondary" id="btnJoin">Join Us</button>
+    </div>
+
+    <!-- dropdown panels (rendered by JS into the menu wrappers) -->
   </div>
 
-  <!-- FAVORITES BAR -->
-  <div id="favBar" class="fav-bar"></div>
+<script>
+/* ====== Configuration: instruments and initial favorites ====== */
+const instruments = {
+  forex: [
+    { id: 'EURUSD', label:'EURUSD', fav:false },
+    { id: 'GBPUSD', label:'GBPUSD', fav:true },   // example starred
+    { id: 'XAUUSD', label:'XAUUSD', fav:false },
+    { id: 'USDJPY', label:'USDJPY', fav:false }
+  ],
+  synth: [
+    { id: 'JUMP_50', label:'JUMP 50', fav:false },
+    { id: 'STEP_INDEX', label:'STEP Index', fav:true },
+    { id: 'VOL_75', label:'Volatility 75', fav:true },
+    { id: 'VOL_100', label:'Volatility 100', fav:false }
+  ]
+};
 
-  <hr>
+/* ====== App state ====== */
+let openMenu = null; // 'forex' or 'synth' or null
+let selectedCategory = null; // 'forex' or 'synth'
+let onlyFavFilter = { forex:false, synth:false };
+let activeInstrument = null; // id of selected instrument
 
-  <!-- ACTION ROWS -->
-  <div class="row">
-    <button class="btn green">EA Name</button>
-    <button class="btn green">Account Info</button>
-    <button class="btn green">Active Charts</button>
-  </div>
+/* ====== Utilities ====== */
+function el(tag, attrs={}, ...children){
+  const e = document.createElement(tag);
+  Object.keys(attrs).forEach(k=>{
+    if(k==='class') e.className = attrs[k];
+    else if(k==='onclick') e.onclick = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  });
+  children.forEach(c=>{
+    if(typeof c === 'string') e.appendChild(document.createTextNode(c));
+    else if(c instanceof Node) e.appendChild(c);
+  });
+  return e;
+}
 
-  <div class="row">
-    <button class="btn blue">Quotes</button>
-    <button class="btn blue">Screenshot</button>
-  </div>
+/* ====== Render dropdown panels ====== */
+function toggleMenu(type){
+  if(openMenu === type){ closeMenus(); return; }
+  openMenu = type;
+  renderMenus();
+}
 
-  <div class="row">
-    <button class="btn green" onclick="sendTrade('BUY')">Buy</button>
-    <button class="btn green" onclick="sendTrade('SELL')">Sell</button>
-    <button class="btn danger" onclick="sendTrade('CLOSE')">Close</button>
-    <button class="btn secondary">Adjust</button>
-  </div>
+function closeMenus(){
+  openMenu = null;
+  // remove existing panels if any
+  ['forexMenuWrap','synthMenuWrap'].forEach(id=>{
+    const wrap = document.getElementById(id);
+    const panel = wrap.querySelector('.menu-panel');
+    if(panel) panel.remove();
+  });
+}
 
-  <div class="row">
-    <button class="btn secondary">Status</button>
-    <button class="btn secondary">Results</button>
-  </div>
+/* Build a menu panel and insert under the wrapper */
+function renderMenus(){
+  closeMenus();
+  if(!openMenu) return;
+  const wrapId = openMenu === 'forex' ? 'forexMenuWrap' : 'synthMenuWrap';
+  const wrap = document.getElementById(wrapId);
+  const panel = el('div',{class:'menu-panel'});
 
-  <div class="row footer">
-    <button class="btn secondary">Contact Us</button>
-    <button class="btn secondary">Join Us</button>
-  </div>
-</div>
+  // Favored toggle (filters inside the menu)
+  const favRow = el('div',{class:'fav-toggle'}, 
+    (function(){
+      const cb = el('input',{type:'checkbox'});
+      cb.checked = !!onlyFavFilter[openMenu];
+      cb.onchange = ()=>{
+        onlyFavFilter[openMenu] = cb.checked;
+        // refresh the menu
+        renderMenus();
+      };
+      return cb;
+    })(),
+    el('div',{class:'menu-title'}, 'Favored'),
+    el('div',{class:'menu-small'}, 'show only starred')
+  );
+  panel.appendChild(favRow);
 
-<script src="app.js"></script>
+  // list items
+  const list = instruments[openMenu].slice();
+  // if fav filter enabled show only favs, but still allow toggling
+  const filtered = onlyFavFilter[openMenu] ? list.filter(it=>it.fav) : list;
+
+  if(filtered.length === 0){
+    panel.appendChild(el('div',{class:'menu-row'}, el('div',{class:'menu-small'}, 'No instruments in this filter.')));
+  } else {
+    filtered.forEach(it=>{
+      const row = el('div',{class:'menu-row'});
+      // label & pick action
+      const left = el('div');
+      const label = el('div',{class:'menu-title'}, it.label);
+      left.appendChild(label);
+      row.appendChild(left);
+
+      // controls: star toggle & select button
+      const right = el('div',{style:'display:flex;align-items:center;gap:8px'});
+      const star = el('button',{class:'star-btn', onclick:(e)=>{ e.stopPropagation(); toggleFav(openMenu,it.id); }}, it.fav ? '★' : '☆');
+      const pick = el('button',{class:'btn secondary', onclick:(e)=>{ e.stopPropagation(); selectInstrument(openMenu,it.id); closeMenus(); }}, 'Select');
+      right.appendChild(star);
+      right.appendChild(pick);
+      row.appendChild(right);
+      panel.appendChild(row);
+    });
+  }
+
+  // attach
+  wrap.appendChild(panel);
+
+  // close when clicking outside
+  setTimeout(()=>{ window.addEventListener('click', onDocClick); }, 10);
+}
+
+function onDocClick(e){
+  // if click is inside a menu wrapper do nothing
+  const forexWrap = document.getElementById('forexMenuWrap');
+  const synthWrap = document.getElementById('synthMenuWrap');
+  if(forexWrap.contains(e.target) || synthWrap.contains(e.target)) return;
+  window.removeEventListener('click', onDocClick);
+  closeMenus();
+}
+
+/* toggle favorite/star for instrument */
+function toggleFav(category, id){
+  const arr = instruments[category];
+  const item = arr.find(i=>i.id===id);
+  if(!item) return;
+  item.fav = !item.fav;
+  renderMenus();
+  renderFavBar();
+}
+
+/* select an instrument (sets active instrument) */
+function selectInstrument(category, id){
+  selectedCategory = category;
+  activeInstrument = id;
+  renderFavBar();
+}
+
+/* renders the favBar (second list) — shows only starred instruments of selectedCategory, or message */
+function renderFavBar(){
+  const bar = document.getElementById('favBar');
+  bar.innerHTML = '';
+
+  // If no category chosen, show a small hint
+  if(!selectedCategory){
+    bar.appendChild(el('div',{class:'empty'}, 'Select a category above (Forex / Synthetics)'));
+    return;
+  }
+
+  const favs = instruments[selectedCategory].filter(i=>i.fav);
+  if(favs.length === 0){
+    // show button instructing to select instrument from menu above
+    const btn = el('button',{class:'instr-btn', onclick:()=> {
+      // open the appropriate menu
+      openMenu = selectedCategory;
+      renderMenus();
+    }}, 'Select instrument from menu above');
+    bar.appendChild(btn);
+    return;
+  }
+
+  // list favorite instruments as buttons
+  favs.forEach(it=>{
+    const btn = el('button',{class:'instr-btn' + (activeInstrument===it.id ? ' active' : ''), onclick:()=>{ selectInstrument(selectedCategory,it.id);} }, it.label);
+    bar.appendChild(btn);
+  });
+}
+
+/* initialize: attach menu wrappers to click which opens the panel with the full list (not native select) */
+function initMenus(){
+  document.getElementById('forexDropdown').onclick = (e)=>{ e.stopPropagation(); selectedCategory='forex'; toggleMenu('forex'); };
+  document.getElementById('synthDropdown').onclick = (e)=>{ e.stopPropagation(); selectedCategory='synth'; toggleMenu('synth'); };
+  // initial favorites bar empty hint
+  renderFavBar();
+}
+
+/* ====== Action handlers and Telegram sending ====== */
+function doAction(cmd){
+  if(!activeInstrument){
+    alert('Please select an instrument first from the list of favored instruments (or choose from the menu).');
+    return;
+  }
+  const payload = { action: cmd, symbol: activeInstrument, time: Date.now() };
+  // If running inside Telegram WebApp, sendData; otherwise console.log for testing
+  try{
+    const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+    if(tg && typeof tg.sendData === 'function'){
+      tg.sendData(JSON.stringify(payload));
+      // optional: close or show confirmation
+      console.log('Sent to TG WebApp:', payload);
+    } else {
+      console.log('TG WebApp not available. Payload:', payload);
+      alert('Test mode (no Telegram). Payload: ' + JSON.stringify(payload));
+    }
+  }catch(err){
+    console.error(err);
+  }
+}
+
+/* convenience wrapper for buy/sell/close naming used in some places */
+function doActionWrapper(action){
+  doAction(action);
+}
+
+function doActionNamed(action){
+  doAction(action);
+}
+
+/* small wrapper to keep old "doAction" call style */
+function doAction_old(a){ doAction(a); }
+
+/* exposed function from markup */
+function doActionFromClick(a){ doAction(a); }
+
+/* For button inline usage in markup */
+function doActionInline(action){ doAction(action); }
+
+/* helper used by markup onclicks earlier */
+window.doAction = function(a){ return doAction(a); };
+
+/* doAction alias used in markup (doAction('BUY') etc.) */
+window.doAction = doAction;
+
+/* initialize app and buttons */
+(function(){
+  initMenus();
+
+  // hookup other buttons (you can expand their behavior)
+  document.getElementById('btnEaName').onclick = ()=>{ alert('EA: Telegram_Bot_EA (example)'); };
+  document.getElementById('btnAccount').onclick = ()=>{ alert('Account info requested'); };
+  document.getElementById('btnActive').onclick = ()=>{ alert('Active charts requested'); };
+
+  document.getElementById('btnQuotes').onclick = ()=>{ if(!activeInstrument){ alert('Select instrument first'); return;} alert('Quotes: ' + activeInstrument); };
+  document.getElementById('btnShot').onclick = ()=>{ if(!activeInstrument){ alert('Select instrument first'); return;} alert('Screenshot request for: ' + activeInstrument); };
+
+  document.getElementById('btnContact').onclick = ()=>{ window.open('https://t.me/ugflagfx', '_blank'); };
+  document.getElementById('btnJoin').onclick = ()=>{ window.open('https://t.me/ugflagfx', '_blank'); };
+
+  // render fav bar if some default favorites exist: do not change selectedCategory yet.
+  // If you want a default category, uncomment one of the following:
+  // selectedCategory = 'forex'; renderFavBar();
+})();
+</script>
 </body>
 </html>

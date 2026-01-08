@@ -32,6 +32,7 @@ function buildMenu(menuId, list) {
 }
 
 function handleMenu(category) {
+  debugLog("Menu selected", category);
   currentCategory = category;
 
   const menu = document.getElementById(
@@ -52,6 +53,7 @@ function handleMenu(category) {
 function toggleFavorite(sym) {
   if (favorites.includes(sym)) {
     favorites = favorites.filter(s => s !== sym);
+    debugLog("Favorite toggled", favorites);      //??
   } else {
     favorites.push(sym);
   }
@@ -101,6 +103,7 @@ function sendTrade(action) {
   };
 
   if (window.Telegram?.WebApp) {
+    debugLog("Trade sent", payload);
     Telegram.WebApp.sendData(JSON.stringify(payload));
   } else {
     console.log(payload);
@@ -108,3 +111,10 @@ function sendTrade(action) {
 }
 
 initMenus();
+
+
+/* ===== DEBUG LOGGER (STEP 1.2 - OPTION A) ===== */
+function debugLog(label, data) {
+  console.log("[EA PANEL]", label, data);
+}
+

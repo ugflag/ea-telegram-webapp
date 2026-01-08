@@ -1,98 +1,110 @@
-// ================================
-// Telegram WebApp Init
-// ================================
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
+const forexPairs = [
+  "EURUSD",
+  "GBPUSD",
+  "XAUUSD"
+];
 
-// ================================
-// State
-// ================================
-let selectedInstrument = "";
-let selectedCategory = "";
+const syntheticPairs = [
+  "JUMP 50",
+  "STEP Index",
+  "Volatility 75"
+];
 
-// ================================
-// Instrument Lists
-// ================================
-const forexList = ["EURUSD", "GBPUSD", "XAUUSD"];
-const syntheticList = ["STEP Index", "Volatility 75", "JUMP 50"];
+let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let currentCategory = "";
+let currentSymbol = "";
 
-// ================================
-// Populate Menus
-// ================================
-const forexMenu = document.getElementById("forexMenu");
-const syntheticMenu = document.getElementById("syntheticMenu");
-const favBar = document.getElementById("favBar");
+// INIT MENUS
+function initMenus() {
+  buildMenu("forexMenu", forexPairs);
+  buildMenu("syntheticMenu", syntheticPairs);
+  renderFavBar();
+}
 
-function populateMenus() {
-  forexList.forEach(sym => {
-    const opt = document.createElement("option");
-    opt.value = sym;
-    opt.textContent = sym;
-    forexMenu.appendChild(opt);
-  });
+function buildMenu(menuId, list) {
+  const menu = document.getElementById(menuId);
+  menu.innerHTML = `<option value="">Favored ⭐</option>`;
 
-  syntheticList.forEach(sym => {
-    const opt = document.createElement("option");
-    opt.value = sym;
-    opt.textContent = sym;
-    syntheticMenu.appendChild(opt);
+  list.forEach(sym => {
+    const star = favorites.includes(sym) ? "⭐" : "☆";
+    menu.innerHTML += `<option value="${sym}">${star} ${sym}</option>`;
   });
 }
 
-populateMenus();
+function handleMenu(category) {
+  currentCategory = category;
 
-// ================================
-// Handle Menu Selection
-// ================================
-function handleMenu(type) {
-  favBar.innerHTML = "";
-  selectedCategory = type;
-  selectedInstrument = "";
+  const menu = document.getElementById(
+    category === "forex" ? "forexMenu" : "syntheticMenu"
+  );
 
-  const list = type === "forex" ? forexList : syntheticList;
+  const val = menu.value;
 
-  if (list.length === 0) {
-    favBar.innerHTML = `<span class="empty">Select instrument from menu above</span>`;
+  if (val === "") {
+    renderFavBar();
     return;
   }
 
-  list.forEach(sym => {
+  currentSymbol = val;
+  toggleFavorite(val);
+}
+
+function toggleFavorite(sym) {
+  if (favorites.includes(sym)) {
+    favorites = favorites.filter(s => s !== sym);
+  } else {
+    favorites.push(sym);
+  }
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  initMenus();
+}
+
+function renderFavBar() {
+  const bar = document.getElementById("favBar");
+  bar.innerHTML = "";
+
+  let list =
+    currentCategory === "synthetic"
+      ? syntheticPairs
+      : forexPairs;
+
+  const favs = favorites.filter(f => list.includes(f));
+
+  if (favs.length === 0) {
+    bar.innerHTML =
+      `<div class="instrument empty">Select instrument from menu above</div>`;
+    return;
+  }
+
+  favs.forEach(sym => {
     const div = document.createElement("div");
-    div.className = "instrument";
+    div.className = "instrument" + (sym === currentSymbol ? " active" : "");
     div.textContent = sym;
-
     div.onclick = () => {
-      document
-        .querySelectorAll(".instrument")
-        .forEach(el => el.classList.remove("active"));
-
-      div.classList.add("active");
-      selectedInstrument = sym;
-
-      console.log("Selected:", selectedInstrument);
+      currentSymbol = sym;
+      renderFavBar();
     };
-
-    favBar.appendChild(div);
+    bar.appendChild(div);
   });
 }
 
-// ================================
-// Trade Sender
-// ================================
 function sendTrade(action) {
-  if (!selectedInstrument) {
-    tg.showAlert("Please select an instrument first.");
+  if (!currentSymbol) {
+    alert("No instrument selected");
     return;
   }
 
   const payload = {
     action: action,
-    symbol: selectedInstrument,
-    category: selectedCategory,
-    time: Date.now()
+    symbol: currentSymbol
   };
 
-  console.log("Sending to MT5:", payload);
-  tg.sendData(JSON.stringify(payload));
+  if (window.Telegram?.WebApp) {
+    Telegram.WebApp.sendData(JSON.stringify(payload));
+  } else {
+    console.log(payload);
+  }
 }
+
+initMenus();

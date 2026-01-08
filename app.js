@@ -53,14 +53,16 @@ function handleMenu(category) {
 function toggleFavorite(sym) {
   if (favorites.includes(sym)) {
     favorites = favorites.filter(s => s !== sym);
-    debugLog("Favorite toggled", favorites);      //??
   } else {
     favorites.push(sym);
   }
 
+  debugLog("Favorite toggled", favorites);
+
   localStorage.setItem("favorites", JSON.stringify(favorites));
   initMenus();
 }
+
 
 function renderFavBar() {
   const bar = document.getElementById("favBar");

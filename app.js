@@ -7,24 +7,25 @@ const forexPairs = [
 const syntheticPairs = [
   "JUMP 50",
   "STEP Index",
-  "Volatility 75"
+  "Volatility 75",
+  "Volatility 100 (1s) Index"
 ];
 
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let currentCategory = "";
-let currentSymbol = "Volatility 100 (1s) Index"; // TEMP TEST
+let currentSymbol = "";
 
-
-// INIT MENUS
+// ---------- INIT ----------
 function initMenus() {
   buildMenu("forexMenu", forexPairs);
   buildMenu("syntheticMenu", syntheticPairs);
   renderFavBar();
 }
 
+// ---------- MENU ----------
 function buildMenu(menuId, list) {
   const menu = document.getElementById(menuId);
-  menu.innerHTML = `<option value="">Favored ⭐</option>`;
+  menu.innerHTML = `<option value="">Select ⭐</option>`;
 
   list.forEach(sym => {
     const star = favorites.includes(sym) ? "⭐" : "☆";
@@ -33,52 +34,41 @@ function buildMenu(menuId, list) {
 }
 
 function handleMenu(category) {
-  debugLog("Menu selected", category);
   currentCategory = category;
 
   const menu = document.getElementById(
     category === "forex" ? "forexMenu" : "syntheticMenu"
   );
 
-  const val = menu.value;
+  if (!menu.value) return;
 
-  if (val === "") {
-    renderFavBar();
-    return;
-  }
-
-  currentSymbol = val;
-  toggleFavorite(val);
+  currentSymbol = menu.value;
+  toggleFavorite(currentSymbol);
 }
 
+// ---------- FAVORITES ----------
 function toggleFavorite(sym) {
-  if (favorites.includes(sym)) {
+  if (favorites.includes(sym))
     favorites = favorites.filter(s => s !== sym);
-  } else {
+  else
     favorites.push(sym);
-  }
-
-  debugLog("Favorite toggled", favorites);
 
   localStorage.setItem("favorites", JSON.stringify(favorites));
   initMenus();
 }
 
-
 function renderFavBar() {
   const bar = document.getElementById("favBar");
   bar.innerHTML = "";
 
-  let list =
-    currentCategory === "synthetic"
-      ? syntheticPairs
-      : forexPairs;
+  const list = currentCategory === "synthetic"
+    ? syntheticPairs
+    : forexPairs;
 
   const favs = favorites.filter(f => list.includes(f));
 
-  if (favs.length === 0) {
-    bar.innerHTML =
-      `<div class="instrument empty">Select instrument from menu above</div>`;
+  if (!favs.length) {
+    bar.innerHTML = `<div class="instrument empty">Select instrument</div>`;
     return;
   }
 
@@ -94,71 +84,25 @@ function renderFavBar() {
   });
 }
 
+// ---------- TRADE SENDER ----------
 function sendTrade(action) {
   if (!currentSymbol) {
     alert("No instrument selected");
     return;
   }
 
-  const payload = {
-    action: action,
-    symbol: currentSymbol
-  };
+  const payload = { action, symbol: currentSymbol };
 
-  console.log("📤 Sending trade:", payload);
+  console.log("📤 Sending:", payload);
 
   fetch("http://localhost:3000/telegram", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
-    .then(res => res.text())
-    .then(msg => console.log("✅ Server response:", msg))
-    .catch(err => console.error("❌ Send failed:", err));
+    .then(r => r.text())
+    .then(t => console.log("✅ Server:", t))
+    .catch(e => console.error("❌ Error:", e));
 }
-
 
 initMenus();
-
-
-/* ===== DEBUG LOGGER (STEP 1.2 - OPTION A) ===== */
-function debugLog(label, data) {
-  console.log("[EA PANEL]", label, data);
-}
-
-
-
-// BUTTON CLICK HANDLER
-function sendTrade(action) {
-  if (!currentSymbol) {
-    alert("No instrument selected");
-    return;
-  }
-
-  const payload = {
-    action: action,
-    symbol: currentSymbol
-  };
-
-  console.log("📤 Sending trade:", payload);
-
-  fetch("http://localhost:3000/telegram", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  })
-    .then(res => res.text())
-    .then(msg => console.log("✅ Server response:", msg))
-    .catch(err => console.error("❌ Send failed:", err));
-}
-
-// SIMPLE SYMBOL SELECTOR (TEMP)
-function setSymbol(sym) {
-  currentSymbol = sym;
-  console.log("🎯 Symbol selected:", sym);
-}
-

@@ -1,3 +1,6 @@
+/* ===============================
+   INSTRUMENT LISTS
+================================ */
 const forexPairs = [
   "EURUSD",
   "GBPUSD",
@@ -7,14 +10,20 @@ const forexPairs = [
 const syntheticPairs = [
   "JUMP 50",
   "STEP Index",
-  "Volatility 75"
+  "Volatility 75",
+  "Volatility 100 (1s) Index"
 ];
 
+/* ===============================
+   STATE
+================================ */
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let currentCategory = "";
 let currentSymbol = "";
 
-// INIT MENUS
+/* ===============================
+   INIT MENUS
+================================ */
 function initMenus() {
   buildMenu("forexMenu", forexPairs);
   buildMenu("syntheticMenu", syntheticPairs);
@@ -63,7 +72,9 @@ function toggleFavorite(sym) {
   initMenus();
 }
 
-
+/* ===============================
+   FAVORITES BAR
+================================ */
 function renderFavBar() {
   const bar = document.getElementById("favBar");
   bar.innerHTML = "";
@@ -83,7 +94,8 @@ function renderFavBar() {
 
   favs.forEach(sym => {
     const div = document.createElement("div");
-    div.className = "instrument" + (sym === currentSymbol ? " active" : "");
+    div.className =
+      "instrument" + (sym === currentSymbol ? " active" : "");
     div.textContent = sym;
     div.onclick = () => {
       currentSymbol = sym;
@@ -93,6 +105,9 @@ function renderFavBar() {
   });
 }
 
+/* ===============================
+   TELEGRAM TRADE SENDER (FIXED)
+================================ */
 function sendTrade(action) {
   if (!currentSymbol) {
     alert("No instrument selected");
@@ -104,19 +119,33 @@ function sendTrade(action) {
     symbol: currentSymbol
   };
 
-  if (window.Telegram?.WebApp) {
-    debugLog("Trade sent", payload);
+  debugLog("📤 Sending trade", payload);
+
+  if (window.Telegram && Telegram.WebApp) {
     Telegram.WebApp.sendData(JSON.stringify(payload));
   } else {
-    console.log(payload);
+    console.warn("⚠ Telegram WebApp not detected");
   }
 }
 
-initMenus();
-
-
-/* ===== DEBUG LOGGER (STEP 1.2 - OPTION A) ===== */
+/* ===============================
+   DEBUG LOGGER
+================================ */
 function debugLog(label, data) {
   console.log("[EA PANEL]", label, data);
 }
 
+/* ===============================
+   TELEGRAM WEBAPP INIT (REQUIRED)
+================================ */
+window.onload = () => {
+  initMenus();
+
+  if (window.Telegram && Telegram.WebApp) {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+    console.log("✅ Telegram WebApp ready");
+  } else {
+    console.log("⚠ Not running inside Telegram");
+  }
+};

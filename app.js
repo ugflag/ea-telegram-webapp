@@ -12,7 +12,8 @@ const syntheticPairs = [
 
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let currentCategory = "";
-let currentSymbol = "";
+let currentSymbol = "Volatility 100 (1s) Index"; // TEMP TEST
+
 
 // INIT MENUS
 function initMenus() {
@@ -104,13 +105,20 @@ function sendTrade(action) {
     symbol: currentSymbol
   };
 
-  if (window.Telegram?.WebApp) {
-    debugLog("Trade sent", payload);
-    Telegram.WebApp.sendData(JSON.stringify(payload));
-  } else {
-    console.log(payload);
-  }
+  console.log("📤 Sending trade:", payload);
+
+  fetch("http://localhost:3000/telegram", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.text())
+    .then(msg => console.log("✅ Server response:", msg))
+    .catch(err => console.error("❌ Send failed:", err));
 }
+
 
 initMenus();
 
@@ -121,11 +129,6 @@ function debugLog(label, data) {
 }
 
 
-
-
-
-
-let currentSymbol = "";
 
 // BUTTON CLICK HANDLER
 function sendTrade(action) {

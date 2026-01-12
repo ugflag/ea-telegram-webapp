@@ -7,25 +7,23 @@ const forexPairs = [
 const syntheticPairs = [
   "JUMP 50",
   "STEP Index",
-  "Volatility 75",
-  "Volatility 100 (1s) Index"
+  "Volatility 75"
 ];
 
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let currentCategory = "";
 let currentSymbol = "";
 
-// ---------- INIT ----------
+// INIT MENUS
 function initMenus() {
   buildMenu("forexMenu", forexPairs);
   buildMenu("syntheticMenu", syntheticPairs);
   renderFavBar();
 }
 
-// ---------- MENU ----------
 function buildMenu(menuId, list) {
   const menu = document.getElementById(menuId);
-  menu.innerHTML = `<option value="">Select ⭐</option>`;
+  menu.innerHTML = `<option value="">Favored ⭐</option>`;
 
   list.forEach(sym => {
     const star = favorites.includes(sym) ? "⭐" : "☆";
@@ -34,41 +32,52 @@ function buildMenu(menuId, list) {
 }
 
 function handleMenu(category) {
+  debugLog("Menu selected", category);
   currentCategory = category;
 
   const menu = document.getElementById(
     category === "forex" ? "forexMenu" : "syntheticMenu"
   );
 
-  if (!menu.value) return;
+  const val = menu.value;
 
-  currentSymbol = menu.value;
-  toggleFavorite(currentSymbol);
+  if (val === "") {
+    renderFavBar();
+    return;
+  }
+
+  currentSymbol = val;
+  toggleFavorite(val);
 }
 
-// ---------- FAVORITES ----------
 function toggleFavorite(sym) {
-  if (favorites.includes(sym))
+  if (favorites.includes(sym)) {
     favorites = favorites.filter(s => s !== sym);
-  else
+  } else {
     favorites.push(sym);
+  }
+
+  debugLog("Favorite toggled", favorites);
 
   localStorage.setItem("favorites", JSON.stringify(favorites));
   initMenus();
 }
 
+
 function renderFavBar() {
   const bar = document.getElementById("favBar");
   bar.innerHTML = "";
 
-  const list = currentCategory === "synthetic"
-    ? syntheticPairs
-    : forexPairs;
+  let list =
+    currentCategory === "synthetic"
+      ? syntheticPairs
+      : forexPairs;
 
   const favs = favorites.filter(f => list.includes(f));
 
-  if (!favs.length) {
-    bar.innerHTML = `<div class="instrument empty">Select instrument</div>`;
+  if (favs.length === 0) {
+    bar.innerHTML =
+      `<div class="instrument empty">Select instrument from menu above</div>`;
     return;
   }
 
@@ -84,25 +93,30 @@ function renderFavBar() {
   });
 }
 
-// ---------- TRADE SENDER ----------
 function sendTrade(action) {
   if (!currentSymbol) {
     alert("No instrument selected");
     return;
   }
 
-  const payload = { action, symbol: currentSymbol };
+  const payload = {
+    action: action,
+    symbol: currentSymbol
+  };
 
-  console.log("📤 Sending:", payload);
-
-  fetch("http://localhost:3000/telegram", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-    .then(r => r.text())
-    .then(t => console.log("✅ Server:", t))
-    .catch(e => console.error("❌ Error:", e));
+  if (window.Telegram?.WebApp) {
+    debugLog("Trade sent", payload);
+    Telegram.WebApp.sendData(JSON.stringify(payload));
+  } else {
+    console.log(payload);
+  }
 }
 
 initMenus();
+
+
+/* ===== DEBUG LOGGER (STEP 1.2 - OPTION A) ===== */
+function debugLog(label, data) {
+  console.log("[EA PANEL]", label, data);
+}
+

@@ -10,7 +10,6 @@ const forexPairs = [
 const syntheticPairs = [
   "JUMP 50",
   "STEP Index",
-  "Volatility 75",
   "Volatility 100 (1s) Index"
 ];
 
@@ -22,7 +21,7 @@ let currentCategory = "";
 let currentSymbol = "";
 
 /* ===============================
-   INIT MENUS
+   INIT
 ================================ */
 function initMenus() {
   buildMenu("forexMenu", forexPairs);
@@ -30,9 +29,12 @@ function initMenus() {
   renderFavBar();
 }
 
+/* ===============================
+   MENU BUILDERS
+================================ */
 function buildMenu(menuId, list) {
   const menu = document.getElementById(menuId);
-  menu.innerHTML = `<option value="">Favored ⭐</option>`;
+  menu.innerHTML = `<option value="">Select Instrument</option>`;
 
   list.forEach(sym => {
     const star = favorites.includes(sym) ? "⭐" : "☆";
@@ -41,7 +43,6 @@ function buildMenu(menuId, list) {
 }
 
 function handleMenu(category) {
-  debugLog("Menu selected", category);
   currentCategory = category;
 
   const menu = document.getElementById(
@@ -49,16 +50,15 @@ function handleMenu(category) {
   );
 
   const val = menu.value;
-
-  if (val === "") {
-    renderFavBar();
-    return;
-  }
+  if (!val) return;
 
   currentSymbol = val;
   toggleFavorite(val);
 }
 
+/* ===============================
+   FAVORITES
+================================ */
 function toggleFavorite(sym) {
   if (favorites.includes(sym)) {
     favorites = favorites.filter(s => s !== sym);
@@ -66,20 +66,15 @@ function toggleFavorite(sym) {
     favorites.push(sym);
   }
 
-  debugLog("Favorite toggled", favorites);
-
   localStorage.setItem("favorites", JSON.stringify(favorites));
   initMenus();
 }
 
-/* ===============================
-   FAVORITES BAR
-================================ */
 function renderFavBar() {
   const bar = document.getElementById("favBar");
   bar.innerHTML = "";
 
-  let list =
+  const list =
     currentCategory === "synthetic"
       ? syntheticPairs
       : forexPairs;
@@ -88,14 +83,13 @@ function renderFavBar() {
 
   if (favs.length === 0) {
     bar.innerHTML =
-      `<div class="instrument empty">Select instrument from menu above</div>`;
+      `<div class="instrument empty">Select instrument above</div>`;
     return;
   }
 
   favs.forEach(sym => {
     const div = document.createElement("div");
-    div.className =
-      "instrument" + (sym === currentSymbol ? " active" : "");
+    div.className = "instrument" + (sym === currentSymbol ? " active" : "");
     div.textContent = sym;
     div.onclick = () => {
       currentSymbol = sym;
@@ -106,9 +100,11 @@ function renderFavBar() {
 }
 
 /* ===============================
-   TELEGRAM TRADE SENDER (FIXED)
+   🚀 FAST EXECUTION (NO TELEGRAM)
 ================================ */
 function sendTrade(action) {
+  console.log("🟡 BUTTON CLICKED:", action);
+
   if (!currentSymbol) {
     alert("No instrument selected");
     return;
@@ -119,33 +115,21 @@ function sendTrade(action) {
     symbol: currentSymbol
   };
 
-  debugLog("📤 Sending trade", payload);
+  console.log("📤 Sending trade:", payload);
 
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.sendData(JSON.stringify(payload));
-  } else {
-    console.warn("⚠ Telegram WebApp not detected");
-  }
+  fetch("http://localhost:3000/telegram", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.text())
+    .then(msg => console.log("✅ Server response:", msg))
+    .catch(err => console.error("❌ Send failed:", err));
 }
 
 /* ===============================
-   DEBUG LOGGER
+   START
 ================================ */
-function debugLog(label, data) {
-  console.log("[EA PANEL]", label, data);
-}
-
-/* ===============================
-   TELEGRAM WEBAPP INIT (REQUIRED)
-================================ */
-window.onload = () => {
-  initMenus();
-
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-    console.log("✅ Telegram WebApp ready");
-  } else {
-    console.log("⚠ Not running inside Telegram");
-  }
-};
+document.addEventListener("DOMContentLoaded", initMenus);
